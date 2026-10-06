@@ -1,0 +1,26 @@
+{
+  "model": "Random Forest (+ SMOTE)",
+  "features": [
+    "contribution_frequency_score",
+    "payout_compliance_rate",
+    "loan_repayment_ratio",
+    "group_tenure_months",
+    "credit_amount_normalised",
+    "age"
+  ],
+  "test_f1": 0.79,
+  "test_accuracy": 0.9016,
+  "test_roc_auc": 0.9583,
+  "threshold": 0.547,
+  "srs_f1_target": 0.75,
+  "srs_met": true,
+  "dataset": "Loan Approval Classification \u2014 taweilo (Kaggle, 45,000 rows)",
+  "dropped_features": [
+    "credit_score",
+    "person_gender",
+    "person_education",
+    "person_home_ownership",
+    "loan_intent",
+    "loan_int_rate"
+  ]
+}
