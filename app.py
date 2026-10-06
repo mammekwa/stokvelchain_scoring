@@ -1,29 +1,28 @@
+import json
 import os
 
 import joblib
 import pandas as pd
 from flask import Flask, jsonify, request
 
-# Must match the column order the model was trained on in Colab.
-FEATURES = [
-    "contribution_frequency_score",
-    "payout_compliance_rate",
-    "loan_repayment_ratio",
-    "group_tenure_months",
-    "credit_amount_normalised",
-    "age",
-]
-
-MODEL_PATH = os.environ.get("MODEL_PATH", "credit_model.joblib")
+MODEL_PATH = os.environ.get("MODEL_PATH", "credit_scoring_pipeline.pkl")
+METADATA_PATH = os.environ.get("METADATA_PATH", "model_metadata.json")
 API_KEY = os.environ.get("SCORING_API_KEY")  # shared secret with Spring Boot
 
 model = joblib.load(MODEL_PATH)
+with open(METADATA_PATH) as f:
+    metadata = json.load(f)
+
+# Feature order and decision threshold come straight from the notebook export.
+FEATURES = metadata["features"]
+THRESHOLD = float(metadata["threshold"])
+
 app = Flask(__name__)
 
 
 @app.get("/health")
 def health():
-    return jsonify(status="ok")
+    return jsonify(status="ok", model=metadata.get("model"), threshold=THRESHOLD)
 
 
 @app.post("/predict")
@@ -41,10 +40,13 @@ def predict():
     except (TypeError, ValueError):
         return jsonify(error="All features must be numeric"), 400
 
+    # Class 1 = approved (loan_status in the training data)
     probability = float(model.predict_proba(row)[0][1])
     return jsonify(
         probability=round(probability, 4),
-        prediction=int(model.predict(row)[0]),
+        score=round(probability * 100, 1),
+        threshold=THRESHOLD,
+        eligible=probability >= THRESHOLD,
         modelVersion=os.environ.get("MODEL_VERSION", "v1"),
     )
 
