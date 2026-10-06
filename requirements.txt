@@ -1,0 +1,7 @@
+flask
+gunicorn
+joblib
+pandas
+# Pin both to the exact versions printed in Colab
+scikit-learn==1.6.1
+imbalanced-learn==0.14.2
